@@ -6,13 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C0C969552F48E1EC00A2019B /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C0C969542F48E1EC00A2019B /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C0C969312F48E03500A2019B /* TenTen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TenTen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C07140492F48FA7E002D5B78 /* Exceptions for "TenTen" folder in "TenTen" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C0C969302F48E03500A2019B /* TenTen */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C0C969332F48E03500A2019B /* TenTen */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C07140492F48FA7E002D5B78 /* Exceptions for "TenTen" folder in "TenTen" target */,
+			);
 			path = TenTen;
 			sourceTree = "<group>";
 		};
@@ -23,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0C969552F48E1EC00A2019B /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				C0C969332F48E03500A2019B /* TenTen */,
+				C0C969532F48E1EC00A2019B /* Frameworks */,
 				C0C969322F48E03500A2019B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +62,13 @@
 				C0C969312F48E03500A2019B /* TenTen.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C0C969532F48E1EC00A2019B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -65,6 +91,7 @@
 			);
 			name = TenTen;
 			packageProductDependencies = (
+				C0C969542F48E1EC00A2019B /* Supabase */,
 			);
 			productName = TenTen;
 			productReference = C0C969312F48E03500A2019B /* TenTen.app */;
@@ -94,6 +121,9 @@
 			);
 			mainGroup = C0C969282F48E03500A2019B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C0C9693F2F48E0A300A2019B /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C0C969322F48E03500A2019B /* Products */;
 			projectDirPath = "";
@@ -256,6 +286,8 @@
 				DEVELOPMENT_TEAM = U3FBJDDU87;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenTen/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "TenTen necesita el micrófono para el walkie-talkie";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,6 +320,8 @@
 				DEVELOPMENT_TEAM = U3FBJDDU87;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenTen/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "TenTen necesita el micrófono para el walkie-talkie";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -332,6 +366,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C0C9693F2F48E0A300A2019B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C0C969542F48E1EC00A2019B /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0C9693F2F48E0A300A2019B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C0C969292F48E03500A2019B /* Project object */;
 }

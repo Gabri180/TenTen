@@ -1,17 +1,12 @@
-//
-//  TenTenApp.swift
-//  TenTen
-//
-//  Created by Gabriel on 20/2/26.
-//
-
 import SwiftUI
+import AVFoundation
 
 @main
 struct TenTenApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTalkView() // Aquí ponemos la vista del botón
         }
     }
 }
+
