@@ -1,102 +1,152 @@
 import SwiftUI
 import CoreImage.CIFilterBuiltins
+import PhotosUI
 
 struct ProfileView: View {
     @EnvironmentObject var supabase: SupabaseManager
     @State private var friendUsername = ""
     @State private var friends: [SupabaseManager.Profile] = []
     @State private var message = ""
-    @State private var selectedFriend: SupabaseManager.Profile?
+    @State private var selectedPhoto: PhotosPickerItem?
+    @State private var isDND: Bool = false
 
     var userId: String { supabase.currentUser?.id ?? "..." }
     var username: String { supabase.currentUser?.username ?? "..." }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                VStack(spacing: 8) {
-                    Image(uiImage: generateQR(from: userId))
-                        .interpolation(.none)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 160, height: 160)
-                        .padding(12)
-                        .background(Color.white)
-                        .cornerRadius(16)
-                        .shadow(radius: 4)
+            ScrollView {
+                VStack(spacing: 24) {
 
-                    Text("@\(username)")
-                        .font(.headline)
-
-                    Text(userId)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .frame(maxWidth: 260)
-
-                    Button {
-                        UIPasteboard.general.string = userId
-                        message = "ID copiado ✅"
-                    } label: {
-                        Label("Copiar ID", systemImage: "doc.on.doc")
-                            .font(.caption)
-                    }
-                    .buttonStyle(.bordered)
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Añadir amigo").font(.headline)
-                    HStack {
-                        TextField("Nombre de usuario o ID", text: $friendUsername)
-                            .textFieldStyle(.roundedBorder)
-                            .autocapitalization(.none)
-                        Button("Añadir") {
-                            Task { await addFriend() }
+                    // Avatar + foto
+                    VStack(spacing: 12) {
+                        PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                            AvatarCircle(
+                                url: supabase.currentUser?.avatarUrl,
+                                name: username,
+                                size: 90
+                            )
+                            .overlay(
+                                Image(systemName: "camera.fill")
+                                    .font(.caption)
+                                    .padding(6)
+                                    .background(Color.black.opacity(0.6))
+                                    .clipShape(Circle())
+                                    .foregroundColor(.white),
+                                alignment: .bottomTrailing
+                            )
                         }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(friendUsername.isEmpty)
-                    }
-                    if !message.isEmpty {
-                        Text(message).font(.caption).foregroundColor(.secondary)
-                    }
-                }
-                .padding(.horizontal)
+                        .onChange(of: selectedPhoto) { _, item in
+                            Task { await uploadPhoto(item: item) }
+                        }
 
-                Divider()
+                        Text("@\(username)").font(.title2.bold())
 
-                VStack(alignment: .leading) {
-                    Text("Amigos (\(friends.count))").font(.headline).padding(.horizontal)
-                    if friends.isEmpty {
-                        Text("Aún no tienes amigos añadidos")
-                            .foregroundColor(.secondary).font(.caption).padding(.horizontal)
-                    } else {
-                        List(friends) { friend in
-                            Button {
-                                selectedFriend = friend
-                            } label: {
-                                HStack {
-                                    Circle().fill(Color.green).frame(width: 10, height: 10)
-                                    Text("@\(friend.username)")
-                                    Spacer()
-                                    Image(systemName: "mic.fill").foregroundColor(.orange)
-                                }
+                        Text(userId)
+                            .font(.caption2).foregroundColor(.secondary)
+                            .lineLimit(1).truncationMode(.middle)
+                            .frame(maxWidth: 260)
+
+                        Button {
+                            UIPasteboard.general.string = userId
+                            message = "ID copiado ✅"
+                        } label: {
+                            Label("Copiar ID", systemImage: "doc.on.doc").font(.caption)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .padding(.top)
+
+                    Divider()
+
+                    // Toggle No Molestar
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle(isOn: $isDND) {
+                            Label("No molestar 🌙", systemImage: "moon.fill")
+                        }
+                        .onChange(of: isDND) { _, val in
+                            Task { try? await supabase.setDND(active: val) }
+                        }
+                        Text("Tus amigos verán que estás en modo no molestar")
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal)
+
+                    Divider()
+
+                    // QR
+                    VStack(spacing: 8) {
+                        Image(uiImage: generateQR(from: userId))
+                            .interpolation(.none)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 140, height: 140)
+                            .padding(12)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .shadow(radius: 4)
+                        Text("Muestra este QR para que te añadan")
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+
+                    Divider()
+
+                    // Añadir amigo
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Añadir amigo").font(.headline)
+                        HStack {
+                            TextField("Usuario o ID", text: $friendUsername)
+                                .textFieldStyle(.roundedBorder)
+                                .autocapitalization(.none)
+                            Button("Añadir") {
+                                Task { await addFriend() }
                             }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(friendUsername.isEmpty)
                         }
-                        .listStyle(.plain)
+                        if !message.isEmpty {
+                            Text(message).font(.caption).foregroundColor(.secondary)
+                        }
                     }
+                    .padding(.horizontal)
+
+                    Divider()
+
+                    // Lista amigos
+                    VStack(alignment: .leading) {
+                        Text("Amigos (\(friends.count))").font(.headline).padding(.horizontal)
+                        ForEach(friends) { friend in
+                            HStack(spacing: 12) {
+                                AvatarCircle(url: friend.avatarUrl, name: friend.username, size: 36)
+                                VStack(alignment: .leading) {
+                                    Text("@\(friend.username)")
+                                    if friend.isDnd == true {
+                                        Text("🌙 No molestar").font(.caption).foregroundColor(.orange)
+                                    }
+                                }
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 4)
+                        }
+                    }
+
+                    Spacer(minLength: 40)
                 }
-                Spacer()
             }
-            .padding(.top)
             .navigationTitle("Mi perfil")
-            .task { await loadFriends() }
-            .navigationDestination(item: $selectedFriend) { friend in
-                DirectCallView(friend: friend)
+            .task {
+                await loadFriends()
+                isDND = supabase.currentUser?.isDnd ?? false
             }
         }
+    }
+
+    func uploadPhoto(item: PhotosPickerItem?) async {
+        guard let item,
+              let data = try? await item.loadTransferable(type: Data.self),
+              let image = UIImage(data: data) else { return }
+        _ = try? await supabase.uploadAvatar(image: image)
     }
 
     func generateQR(from string: String) -> UIImage {
@@ -114,12 +164,10 @@ struct ProfileView: View {
     func addFriend() async {
         message = ""
         guard let found = try? await supabase.findUser(byCode: friendUsername) else {
-            message = "Usuario no encontrado ❌"
-            return
+            message = "Usuario no encontrado ❌"; return
         }
         guard found.id != supabase.currentUser?.id else {
-            message = "No puedes añadirte a ti mismo 😅"
-            return
+            message = "No puedes añadirte a ti mismo 😅"; return
         }
         do {
             try await supabase.addFriend(friendId: found.id)

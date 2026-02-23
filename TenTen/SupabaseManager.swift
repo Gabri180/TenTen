@@ -1,6 +1,7 @@
 import Supabase
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 class SupabaseManager: ObservableObject {
@@ -20,6 +21,13 @@ class SupabaseManager: ObservableObject {
     struct AppUser: Codable, Identifiable {
         let id: String
         let username: String
+        var avatarUrl: String?
+        var isDnd: Bool?
+        enum CodingKeys: String, CodingKey {
+            case id, username
+            case avatarUrl = "avatar_url"
+            case isDnd = "is_dnd"
+        }
     }
 
     struct Room: Codable, Identifiable, Hashable {
@@ -30,6 +38,13 @@ class SupabaseManager: ObservableObject {
     struct Profile: Codable, Identifiable, Hashable {
         let id: String
         let username: String
+        var avatarUrl: String?
+        var isDnd: Bool?
+        enum CodingKeys: String, CodingKey {
+            case id, username
+            case avatarUrl = "avatar_url"
+            case isDnd = "is_dnd"
+        }
     }
 
     func loadOrCreateUser(username: String) async throws {
@@ -60,6 +75,39 @@ class SupabaseManager: ObservableObject {
             .execute()
             .value) ?? []
         currentUser = users.first
+    }
+
+    func uploadAvatar(image: UIImage) async throws -> String {
+        guard let userId = currentUser?.id,
+              let data = image.jpegData(compressionQuality: 0.7) else { return "" }
+        let path = "\(userId)/avatar.jpg"
+        try await client.storage.from("avatars").upload(
+            path: path,
+            file: data,
+            options: FileOptions(contentType: "image/jpeg", upsert: true)
+        )
+        let url = try client.storage.from("avatars").getPublicURL(path: path)
+        // Guardar en DB
+        try await client.from("users")
+            .update(["avatar_url": url.absoluteString])
+            .eq("id", value: userId)
+            .execute()
+        // Refrescar usuario local
+        var updated = currentUser
+        updated?.avatarUrl = url.absoluteString
+        currentUser = updated
+        return url.absoluteString
+    }
+
+    func setDND(active: Bool) async throws {
+        guard let userId = currentUser?.id else { return }
+        try await client.from("users")
+            .update(["is_dnd": active])
+            .eq("id", value: userId)
+            .execute()
+        var updated = currentUser
+        updated?.isDnd = active
+        currentUser = updated
     }
 
     func fetchRooms() async throws -> [Room] {

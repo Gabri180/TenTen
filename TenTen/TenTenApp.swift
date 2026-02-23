@@ -1,12 +1,14 @@
 import SwiftUI
-import AVFoundation
 
 @main
 struct TenTenApp: App {
+    @StateObject var supabase = SupabaseManager.shared
+
     var body: some Scene {
         WindowGroup {
-            MainTalkView() // Aquí ponemos la vista del botón
+            ContentView()
+                .environmentObject(supabase)
+                .task { await supabase.loadExistingUser() }
         }
     }
 }
-
